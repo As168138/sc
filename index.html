@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>4码打狗法</title>
+<title>SC4码打狗法</title>
 <link rel="icon" href="data:,">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -16,15 +16,11 @@
   .card-title::before { content: ""; width: 4px; height: 16px; background: #2563eb; border-radius: 2px; }
   .card-title .live-dot { width: 8px; height: 8px; background: #ef4444; border-radius: 50%; margin-left: 4px; animation: pulse 1.4s infinite; }
   @keyframes pulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:.35;transform:scale(.8);} }
-  .live-box { background: #fff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; min-height: 45px; display: flex; flex-direction: column; justify-content: center; }
+  .live-box { background: #fff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; }
   .live-box iframe { display: block; width: 100%; border: 0; background: #fff; }
-  .live-note { font-size: 12px; color: #64748b; margin-top: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+  .live-note { font-size: 12px; color: #64748b; margin-top: 8px; display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; }
   .live-note a { color: #2563eb; text-decoration: none; }
   .live-note a:hover { text-decoration: underline; }
-  .live-src-group { display: inline-flex; gap: 3px; background: #f1f5f9; padding: 3px; border-radius: 8px; margin-left: auto; }
-  .live-src-btn { border: none; background: transparent; padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; color: #475569; cursor: pointer; font-family: inherit; transition: .15s; }
-  .live-src-btn:hover { background: #e2e8f0; }
-  .live-src-btn.active { background: #2563eb; color: #fff; box-shadow: 0 1px 3px rgba(37,99,235,.4); }
 
   .data-grid { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 16px; align-items: stretch; }
   @media (max-width: 860px) { .data-grid { grid-template-columns: 1fr; } }
@@ -57,29 +53,6 @@
   .ref-streak.hidden { display: block !important; visibility: hidden; }
 
   #refDigitGroup .ref-btn { min-width: 52px; }
-
-  /* 临时备注：小输入框，与参考按钮并排 */
-  .memo-input {
-    flex: 1 1 180px;
-    min-width: 150px;
-    max-width: 400px;
-    padding: 9px 12px;
-    margin-left: 4px;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
-    font-size: 13px;
-    font-family: inherit;
-    background: #f8fafc;
-    color: #1f2937;
-    outline: none;
-    transition: border-color .15s, background .15s, box-shadow .15s;
-  }
-  .memo-input:focus {
-    border-color: #2563eb;
-    background: #fff;
-    box-shadow: 0 0 0 2px rgba(37,99,235,.15);
-  }
-  .memo-input::placeholder { color: #94a3b8; }
 
   button.btn-main { background: #2563eb; color: #fff; }
   button.btn-main:hover { background: #1d4ed8; }
@@ -229,6 +202,7 @@
   .trend-col .tx.big   { color: #ef4444; }
   .trend-col .tx.small { color: #334155; }
 
+  /* 走势卡片放在右列时撑满剩余空间 */
   .data-right #trendBox {
     margin-bottom: 0;
     display: flex;
@@ -239,6 +213,7 @@
   .data-right #trendBox.hidden { display: none !important; }
   .data-right #trendBox .trend-scroll { flex: 1 1 auto; min-height: 96px; }
 
+  /* 走势位置选择按钮组（中文，独立于参考位/参考号） */
   .trend-pos-group {
     display: inline-flex;
     gap: 3px;
@@ -271,6 +246,7 @@
     box-shadow: 0 1px 3px rgba(37,99,235,.4);
   }
 
+  /* 走势显示范围：单按钮切换（50期 / 全部） */
   .trend-limit-btn {
     margin-left: auto;
     border: 1px solid #cbd5e1;
@@ -296,26 +272,18 @@
 <body>
 <div class="wrap">
 
-  <h1>4码打狗法</h1>
+  <h1>SC4码打狗法</h1>
   <div class="sub">数据源：api68 · 实时直播 + 自动获取 + 按规则回测 + 命中周期分析</div>
 
   <div class="card">
-    <div class="card-title">
-      开奖直播 <span class="live-dot"></span>
-      <span class="live-src-group" id="liveSrcGroup">
-        <button class="live-src-btn active" data-src="0">主线路</button>
-        <button class="live-src-btn" data-src="1">备用线路</button>
-      </span>
-    </div>
+    <div class="card-title">开奖直播 <span class="live-dot"></span></div>
     <div class="live-box">
-      <iframe id="liveFrame" scrolling="no" width="100%" height="45px" frameborder="0"
-              src="https://kj.1689684.com/view/pk10.html?1?10037?null?d?1689691.com"
+      <iframe scrolling="no" width="100%" height="46px" frameborder="0"
+              src="https://kj.16891836.com/view/pk10.html?1?10037?null?d?1688455.com"
               referrerpolicy="no-referrer"></iframe>
-      <div id="liveApiData" class="hidden" style="height:45px; display:flex; align-items:center; justify-content:center; padding:0 16px; background:#fff; font-size:14px;"></div>
     </div>
     <div class="live-note">
-      <span id="liveSrcName">当前：主线路</span>
-      <a id="liveOpenNew" href="https://kj.1689684.com/view/pk10.html?1?10037?null?d?1689691.com"
+      <a href="https://kj.16891836.com/view/pk10.html?1?10037?null?d?1688455.com"
          target="_blank" rel="noopener">在新窗口打开 ↗</a>
     </div>
   </div>
@@ -352,10 +320,11 @@
 
           <label>历史
             <select id="historyPages">
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3" selected>3</option>
-              <option value="all">全部</option>
+              <option value="1">50 期</option>
+              <option value="2">100 期</option>
+              <option value="5" selected>250 期</option>
+              <option value="10">500 期</option>
+              <option value="20">1000 期</option>
             </select>
           </label>
           <button class="btn-history" id="btnHistory" onclick="onClickFetchHistory()">拉取历史</button>
@@ -427,8 +396,6 @@
           <button class="ref-btn" data-digit="9"><span class="ref-name">9</span><span class="ref-streak hidden"></span></button>
           <button class="ref-btn" data-digit="0"><span class="ref-name">10</span><span class="ref-streak hidden"></span></button>
         </div>
-        <!-- 临时备注：小输入框，紧跟在参考号按钮右侧空白处 -->
-        <input type="text" id="memoInput" class="memo-input" placeholder="📝 临时备注（自动保存）">
       </div>
 
       <label>统计最近 <input type="number" id="windowSize" value="20" min="3" max="500"> 期作为起点</label>
@@ -453,6 +420,10 @@
         </thead>
         <tbody id="cycleBody"></tbody>
       </table>
+    </div>
+    <div class="note-line">
+      命中周期 = 1 表示起点期的下一期即命中；周期越大表示连续投注越多期才命中。
+      投注位置与投注号码在起点期确定后<b>固定不变</b>，逐期投到命中为止。
     </div>
     <div class="cycle-stats-compact"><div id="cycleStats" class="stats"></div></div>
     <div id="cycleDist" class="dist-box hidden">
@@ -526,109 +497,6 @@ const refPosName = pos => '第' + (CN[pos - 1] || pos) + '位';
 const SEPARATOR = ' ';
 const NUM_SEPARATOR = ' ';
 
-/* ================= 直播线路 ================= */
-const LIVE_SOURCES = [
-  {
-    name: '主线路',
-    type: 'html',
-    url: 'https://kj.1689684.com/view/pk10.html?1?10037?null?d?1689691.com',
-    height: 45
-  },
-  {
-    name: '备用线路',
-    type: 'api',
-    url: 'https://api.api168168.com/pks/getLotteryPksInfo.do?lotCode=10037',
-    height: 45
-  }
-];
-const LIVE_SRC_KEY = 'pk10_live_src_v1';
-let liveSrcIdx = 0;
-
-function applyLiveSource() {
-  const src = LIVE_SOURCES[liveSrcIdx] || LIVE_SOURCES[0];
-  const iframe = document.getElementById('liveFrame');
-  const apiDiv = document.getElementById('liveApiData');
-  const link = document.getElementById('liveOpenNew');
-  const nameEl = document.getElementById('liveSrcName');
-
-  if (link) link.href = src.url;
-  if (nameEl) nameEl.textContent = '当前：' + src.name;
-
-  document.querySelectorAll('#liveSrcGroup .live-src-btn').forEach(b => {
-    b.classList.toggle('active', parseInt(b.dataset.src, 10) === liveSrcIdx);
-  });
-
-  if (src.type === 'api') {
-    if (iframe) iframe.classList.add('hidden');
-    if (apiDiv) {
-      apiDiv.classList.remove('hidden');
-      fetchApiLiveData();
-    }
-  } else {
-    if (apiDiv) apiDiv.classList.add('hidden');
-    if (iframe) {
-      iframe.classList.remove('hidden');
-      if (iframe.getAttribute('src') !== src.url) iframe.setAttribute('src', src.url);
-    }
-  }
-  try { localStorage.setItem(LIVE_SRC_KEY, String(liveSrcIdx)); } catch (e) {}
-}
-
-async function fetchApiLiveData() {
-  const apiDiv = document.getElementById('liveApiData');
-  if (!apiDiv) return;
-  
-  const latestIssue = fullData.length > 0 ? fullData[fullData.length - 1].issue : '34181818';
-  const apiUrl = `https://api.api168168.com/pks/getLotteryPksInfo.do?issue=${latestIssue}&lotCode=10037`;
-  
-  apiDiv.innerHTML = '<span style="color:#64748b;font-size:13px;">📡 正在获取备用线路数据...</span>';
-  
-  try {
-    const proxyUrl = WORKER_URL + encodeURIComponent(apiUrl);
-    const resp = await fetch(proxyUrl);
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    
-    const text = await resp.text();
-    let json;
-    try { json = JSON.parse(text); } catch (e) {
-      throw new Error('接口返回非JSON格式');
-    }
-    
-    if (json.errorCode !== 0 || !json.result || !json.result.data) {
-      throw new Error(json.message || '接口数据异常');
-    }
-    
-    const data = json.result.data;
-    const codeStr = String(data.preDrawCode || '');
-    const nums = codeStr.split(',').map(n => n.trim()).filter(n => n);
-    const issue = data.preDrawIssue || '—';
-    const time = data.preDrawTime || '';
-
-    const ballsHtml = nums.map(n => {
-      const numKey = parseInt(n, 10) === 10 ? '0' : String(parseInt(n, 10));
-      const style = BALL_STYLES[numKey] || { bg: '#e5e7eb', color: '#1f2937' };
-      const display = parseInt(n, 10) === 10 ? '10' : String(parseInt(n, 10));
-      return `<span class="p-ball" style="background:${style.bg};color:${style.color};width:1.4em;height:1.4em;font-size:13px;margin:0 2px;">${display}</span>`;
-    }).join('');
-
-    apiDiv.innerHTML = `
-      <div style="display:flex; align-items:center; justify-content:center; gap:12px; width:100%; font-size:13px; color:#0f172a; font-family: ui-monospace, Menlo, Consolas, monospace;">
-        <span style="font-weight:700;">第 ${issue} 期</span>
-        <span style="display:flex; align-items:center;">${ballsHtml}</span>
-        <span style="color:#64748b;">${time}</span>
-      </div>
-    `;
-  } catch (e) {
-    console.error('[API直播] 获取失败:', e);
-    apiDiv.innerHTML = `<span style="color:#dc2626;font-size:13px;">备用线路加载失败: ${e.message}</span>`;
-  }
-}
-
-function setLiveSource(i) {
-  liveSrcIdx = (Number.isFinite(i) && i >= 0 && i < LIVE_SOURCES.length) ? i : 0;
-  applyLiveSource();
-}
-
 /* ================= 状态 ================= */
 const LS_KEY = 'pk10_input_v1';
 const SOUND_KEY = 'pk10_sound_enabled';
@@ -639,7 +507,6 @@ const REF_MODE_KEY = 'pk10_ref_mode_v1';
 const REF_VALUE_KEY = 'pk10_ref_value_v1';
 const TREND_LIMIT_KEY = 'pk10_trend_limit_v1';
 const TREND_POS_KEY = 'pk10_trend_pos_v1';
-const MEMO_KEY = 'pk10_memo_v1';
 const DEFAULT_DISPLAY_COUNT = 10;
 
 let autoFetchTimer = null;
@@ -651,7 +518,10 @@ let fullData = [];
 let showAllRecords = false;
 let showBacktest = false;
 
+/* 走势显示限制：数字（期数）或 'all' */
 let trendLimit = 50;
+
+/* 走势显示位置：1-10，独立于参考位/参考号 */
 let trendPos = 1;
 
 /* ================= 参考选择（位 / 号） ================= */
@@ -769,7 +639,7 @@ function updateToggleButtonText() {
   btn.textContent = showAllRecords ? `仅显示最新${DEFAULT_DISPLAY_COUNT}期` : `显示全部`;
 }
 
-/* ================= 走势显示范围 ================= */
+/* ================= 走势显示范围：单按钮切换 50期 / 全部 ================= */
 function applyTrendLimitUI() {
   const btn = document.getElementById('trendLimitBtn');
   if (!btn) return;
@@ -789,7 +659,7 @@ function toggleTrendLimit() {
   setTrendLimit(trendLimit === 'all' ? 50 : 'all');
 }
 
-/* ================= 走势位置切换 ================= */
+/* ================= 走势位置切换（独立于参考位/参考号） ================= */
 function applyTrendPosUI() {
   document.querySelectorAll('#trendPosGroup .trend-pos-btn').forEach(b => {
     b.classList.toggle('active', parseInt(b.dataset.pos, 10) === trendPos);
@@ -895,15 +765,28 @@ function flashTitle(msg) {
     document.title = originalTitle;
   }, 12000);
 }
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) {
+    clearInterval(titleFlashTimer);
+    document.title = originalTitle;
+  }
+});
 
 /* ================= 数据抓取（API） ================= */
-const WORKER_URL = 'https://pk10-proxy.liahongyu.workers.dev/?url=';
+// 代理列表（仅作兜底；CF Worker 因到国内接口超时，放最后）
+const PROXY_URLS = [
+  'https://api.codetabs.com/v1/proxy?quest=',
+  'https://cors.isomorphic-git.org/',
+  'https://api.allorigins.win/raw?url=',
+  'https://pk10-proxy.liahongyu.workers.dev/?url='
+];
 
+// API 候选源
 const API_CANDIDATES = [
-  'http://api.api68.com/pks/getPksHistoryList.do?lotCode=10037',
   'https://api.api68.com/pks/getPksHistoryList.do?lotCode=10037',
-  'http://api.api68.com/lottery/getPksHistoryList.do?lotCode=10037',
-  'https://api.api68.com/lottery/getPksHistoryList.do?lotCode=10037'
+  'https://api.api68.com/lottery/getPksHistoryList.do?lotCode=10037',
+  'https://api.1689684.com/pks/getPksHistoryList.do?lotCode=10037',
+  'https://api.1689691.com/pks/getPksHistoryList.do?lotCode=10037'
 ];
 
 function setFetchStatus(msg, isError = false) {
@@ -949,39 +832,65 @@ function parseApi68Response(json) {
   return arr;
 }
 
+async function tryFetch(url, timeoutMs = 8000) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    const resp = await fetch(url, {
+      signal: ctrl.signal,
+      method: 'GET',
+      mode: 'cors',
+      credentials: 'omit',
+      cache: 'no-store',
+      headers: { 'Accept': 'application/json, text/plain, */*' }
+    });
+    clearTimeout(timer);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    return await resp.text();
+  } catch (e) {
+    clearTimeout(timer);
+    throw e;
+  }
+}
+
 async function fetchPageFromAPI(pageNo, pageSize = 50) {
   let lastErr = null;
+
+  // 遍历所有 API 源
   for (const base of API_CANDIDATES) {
-    try {
-      const url = `${base}&pageNo=${pageNo}&pageSize=${pageSize}`;
-      const proxyUrl = WORKER_URL + encodeURIComponent(url);
-      const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), 15000);
+    let url = base;
+    if (!url.includes('pageNo=')) url += `&pageNo=${pageNo}`;
+    if (!url.includes('pageSize=')) url += `&pageSize=${pageSize}`;
 
-      const resp = await fetch(proxyUrl, { signal: ctrl.signal });
-      clearTimeout(timer);
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    // 候选顺序：先直连，再走代理
+    const candidates = [
+      { url: url, label: '直连' },
+      ...PROXY_URLS.map(p => ({ url: p + encodeURIComponent(url), label: p.split('/')[2] }))
+    ];
 
-      const text = await resp.text();
-      console.log(`[API p${pageNo}] ${base} 响应前 400 字:`, text.slice(0, 400));
+    for (const { url: finalUrl, label } of candidates) {
+      try {
+        const text = await tryFetch(finalUrl, 8000);
 
-      let json;
-      try { json = JSON.parse(text); } catch (e) {
-        console.error(`[API p${pageNo}] JSON 解析失败`, e);
-        continue;
+        let json;
+        try { json = JSON.parse(text); } catch (e) {
+          console.warn(`[API p${pageNo}] ${label} 非JSON（前80字：${text.slice(0,80)}）`);
+          continue;
+        }
+
+        const records = parseApi68Response(json);
+        if (records.length) {
+          console.log(`[API p${pageNo}] ✅ 成功：${base} via ${label}`);
+          setFetchStatus(`✓ 通过${label}获取`);
+          return records;
+        }
+      } catch (e) {
+        lastErr = e;
+        console.warn(`[API p${pageNo}] ${base} via ${label} 失败: ${e.message}`);
       }
-      const records = parseApi68Response(json);
-      if (records.length) {
-        console.log(`[API p${pageNo}] 使用接口成功: ${base}`);
-        return records;
-      }
-    } catch (e) {
-      lastErr = e;
-      console.warn(`[API p${pageNo}] 接口失败: ${base}`, e.message);
     }
   }
-  if (lastErr) throw lastErr;
-  return [];
+  throw lastErr || new Error('所有接口和代理均不可用');
 }
 
 function sortAsc(arr) {
@@ -1011,7 +920,6 @@ async function fetchLatest(isManual = false) {
         setFetchStatus(`✓ 已是最新 ${latest.issue}`);
         userDirty = false;
       }
-      if (liveSrcIdx === 1) fetchApiLiveData();
       return;
     }
 
@@ -1023,10 +931,6 @@ async function fetchLatest(isManual = false) {
     renderAll(fullData, { rewriteTextarea: shouldRewrite });
     notifyNewData();
     if (isManual) userDirty = false;
-
-    if (liveSrcIdx === 1) {
-      fetchApiLiveData();
-    }
   } catch (e) {
     console.error('[fetchLatest] 失败:', e);
     setFetchStatus('获取失败: ' + e.message, true);
@@ -1037,9 +941,7 @@ async function fetchLatest(isManual = false) {
 
 /* ================= 拉取历史 ================= */
 async function onClickFetchHistory() {
-  const selectVal = document.getElementById('historyPages')?.value || '3';
-  const pages = (selectVal === 'all') ? 'all' : parseInt(selectVal, 10);
-
+  const pages = parseInt(document.getElementById('historyPages')?.value, 10) || 5;
   const btn = document.getElementById('btnHistory');
   if (fetching) {
     const oldText = btn ? btn.textContent : '';
@@ -1059,7 +961,7 @@ async function onClickFetchHistory() {
   await fetchHistory(pages, true);
 }
 
-async function fetchHistory(pages = 3, isManual = false) {
+async function fetchHistory(pages = 5, isManual = false) {
   if (fetching) {
     if (isManual) setFetchStatus('正在获取中，请稍候...', true);
     return;
@@ -1076,17 +978,8 @@ async function fetchHistory(pages = 3, isManual = false) {
     let newCount = 0;
     let fetchedPages = 0;
 
-    const isAll = (pages === 'all');
-    const maxPages = isAll ? 100 : pages; // “全部”时最多拉取 100 页（5000 期），防止死循环
-
-    let p = 1;
-    while (true) {
-      if (p > maxPages) {
-        if (isAll) console.warn('已达到最大安全页数限制(100页)');
-        break;
-      }
-
-      setFetchStatus(`拉取历史中... 第${p}页（已新增 ${newCount} 期）`);
+    for (let p = 1; p <= pages; p++) {
+      setFetchStatus(`拉取历史中... ${p}/${pages} 页（已新增 ${newCount} 期）`);
       let recs;
       try {
         recs = await fetchPageFromAPI(p, 50);
@@ -1095,20 +988,12 @@ async function fetchHistory(pages = 3, isManual = false) {
         console.warn(`第 ${p} 页失败，已保留前 ${p - 1} 页:`, pageErr);
         break;
       }
-
       if (!recs.length) break;
-
       fetchedPages = p;
       recs.forEach(r => {
         if (!map.has(r.issue)) { map.set(r.issue, r); newCount++; }
       });
-
-      p++;
-      if (isAll || p <= pages) {
-        await new Promise(r => setTimeout(r, 300));
-      } else {
-        break;
-      }
+      if (p < pages) await new Promise(r => setTimeout(r, 300));
     }
 
     if (!map.size) throw new Error('接口未返回任何数据（请查看 Console [API] 日志）');
@@ -1127,10 +1012,6 @@ async function fetchHistory(pages = 3, isManual = false) {
     renderAll(fullData, { rewriteTextarea: shouldRewrite });
     if (newCount > 0 && isManual) notifyNewData();
     if (isManual) userDirty = false;
-
-    if (liveSrcIdx === 1) {
-      fetchApiLiveData();
-    }
   } catch (e) {
     console.error('[fetchHistory] 失败:', e);
     setFetchStatus('拉取失败: ' + e.message, true);
@@ -1307,7 +1188,9 @@ function updateRefStreaks(data) {
     applyStreak(btn, { mode: 'digit', digit: btn.dataset.digit }));
 }
 
-/* ================= 渲染：大小走势 ================= */
+/* ================= 渲染：大小走势 =================
+ * 走势位置由 trendPos（1-10）独立控制，与参考位/参考号完全解耦。
+ */
 function renderTrend(data) {
   const card = document.getElementById('trendBox');
   const cols = document.getElementById('trendCols');
@@ -1320,10 +1203,12 @@ function renderTrend(data) {
 
   const posIdx = trendPos - 1;
 
+  // 按显示范围截取（最新一期在最右，取末尾 N 期）
   const source = (trendLimit === 'all' || !Number.isFinite(trendLimit))
     ? data
     : data.slice(Math.max(0, data.length - trendLimit));
 
+  // 把每期归类并合并连续相同大小
   const groups = [];
   for (let i = 0; i < source.length; i++) {
     const raw = source[i].nums[posIdx];
@@ -1334,6 +1219,7 @@ function renderTrend(data) {
     else groups.push({ type, count: 1 });
   }
 
+  // 渲染成列
   const html = groups.map(g => {
     const label = g.type === 'big' ? '大' : '小';
     let inner = '';
@@ -1345,6 +1231,7 @@ function renderTrend(data) {
   cols.innerHTML = html;
   card.classList.remove('hidden');
 
+  // 滚动到最右端（最新一期）
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       const sc = document.getElementById('trendScroll');
@@ -1646,14 +1533,6 @@ function renderAll(data, options = {}) {
   if (n > 500) n = 500;
   const ref = currentRef();
 
-  // ===== 核心改动：数据更新后，大小走势默认同步为当前投注位 =====
-  if (data.length >= 2) {
-    const pred = makePrediction(data, data.length - 1, ref);
-    trendPos = pred.betPos;
-    try { localStorage.setItem(TREND_POS_KEY, String(trendPos)); } catch (e) {}
-    applyTrendPosUI();
-  }
-
   updateRefStreaks(data);
   renderTrend(data);
   renderNextPrediction(data, ref);
@@ -1726,34 +1605,6 @@ window.addEventListener('DOMContentLoaded', () => {
   const textarea = document.getElementById('input');
   const display = document.getElementById('coloredDisplay');
 
-  /* ---- 临时备注初始化 ---- */
-  const memoInput = document.getElementById('memoInput');
-  if (memoInput) {
-    try {
-      const savedMemo = localStorage.getItem(MEMO_KEY);
-      if (savedMemo) memoInput.value = savedMemo;
-    } catch (e) {}
-    memoInput.addEventListener('input', function () {
-      try { localStorage.setItem(MEMO_KEY, this.value); } catch (e) {}
-    });
-  }
-
-  /* ---- 直播线路初始化 ---- */
-  try {
-    const saved = parseInt(localStorage.getItem(LIVE_SRC_KEY), 10);
-    if (Number.isFinite(saved) && saved >= 0 && saved < LIVE_SOURCES.length) liveSrcIdx = saved;
-  } catch (e) {}
-  applyLiveSource();
-
-  const liveSrcGroup = document.getElementById('liveSrcGroup');
-  if (liveSrcGroup) {
-    liveSrcGroup.addEventListener('click', (e) => {
-      const btn = e.target.closest('.live-src-btn');
-      if (!btn) return;
-      setLiveSource(parseInt(btn.dataset.src, 10));
-    });
-  }
-
   const soundChk = document.getElementById('soundEnabled');
   if (soundChk) {
     try {
@@ -1777,6 +1628,7 @@ window.addEventListener('DOMContentLoaded', () => {
   } catch (e) {}
   applyBacktestVisibility();
 
+  /* 恢复走势显示范围 */
   try {
     const saved = localStorage.getItem(TREND_LIMIT_KEY);
     if (saved === 'all') {
@@ -1788,11 +1640,13 @@ window.addEventListener('DOMContentLoaded', () => {
   } catch (e) {}
   applyTrendLimitUI();
 
+  /* 走势范围切换按钮（单按钮） */
   const trendLimitBtn = document.getElementById('trendLimitBtn');
   if (trendLimitBtn) {
     trendLimitBtn.addEventListener('click', toggleTrendLimit);
   }
 
+  /* 恢复走势位置（独立状态） */
   try {
     const saved = localStorage.getItem(TREND_POS_KEY);
     if (saved) {
@@ -1802,6 +1656,7 @@ window.addEventListener('DOMContentLoaded', () => {
   } catch (e) {}
   applyTrendPosUI();
 
+  /* 走势位置按钮事件 */
   const trendPosGroup = document.getElementById('trendPosGroup');
   if (trendPosGroup) {
     trendPosGroup.addEventListener('click', (e) => {
@@ -1824,6 +1679,7 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  /* 恢复上次的参考选择（位 / 号） */
   try {
     const savedMode = localStorage.getItem(REF_MODE_KEY);
     const savedValue = localStorage.getItem(REF_VALUE_KEY);
@@ -1958,14 +1814,9 @@ window.addEventListener('DOMContentLoaded', () => {
     if (document.hidden) {
       stopAutoFetch();
       setFetchStatus('页面已隐藏，自动刷新暂停');
-    } else {
-      clearInterval(titleFlashTimer);
-      document.title = originalTitle;
-
-      if (chk && chk.checked) {
-        startAutoFetch();
-        fetchLatest(false);
-      }
+    } else if (chk && chk.checked) {
+      startAutoFetch();
+      fetchLatest(false);
     }
   });
 
