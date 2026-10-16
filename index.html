@@ -27,11 +27,11 @@
   .data-left { display: flex; flex-direction: column; min-width: 0; }
   .data-right { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 
-  .input-wrapper { position: relative; flex: 1; min-height: 460px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; transition: border-color .15s, background .15s; overflow: hidden; }
+  .input-wrapper { position: relative; flex: 1; min-height: 240px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; transition: border-color .15s, background .15s; overflow: hidden; --fd-font-scale: 1; }
   .input-wrapper:focus-within { border-color: #2563eb; background: #fff; }
-  .input-wrapper .colored-display { position: absolute; inset: 0; z-index: 1; padding: 16px 18px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 18px; line-height: 2.0; color: #1f2937; white-space: pre; overflow: hidden; pointer-events: none; user-select: none; }
-  .input-wrapper .colored-display .num { display: inline-flex; align-items: center; justify-content: center; width: 1.75em; height: 1.6em; padding: 0; margin: 0 3px; border-radius: 5px; font-weight: 800; font-size: 0.95em; line-height: 1; vertical-align: middle; box-shadow: 0 1px 2px rgba(0,0,0,.18); letter-spacing: 0; flex: 0 0 auto; }
-  .input-wrapper textarea { position: relative; z-index: 2; width: 100%; height: 100%; min-height: 460px; padding: 16px 18px; border: none; background: transparent; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 18px; line-height: 2.0; resize: none; outline: none; color: transparent; caret-color: #1f2937; white-space: pre; overflow: auto; scrollbar-gutter: stable; }
+  .input-wrapper .colored-display { position: absolute; inset: 0; z-index: 1; padding: 16px 18px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: calc(18px * var(--fd-font-scale, 1)); line-height: 2.0; color: #1f2937; white-space: pre; overflow: hidden; pointer-events: none; user-select: none; }
+  .input-wrapper .colored-display .num { display: inline-flex; align-items: center; justify-content: center; width: 1.55em; height: 1.42em; padding: 0; margin: 0 1.5px; border-radius: 5px; font-weight: 800; font-size: 0.82em; line-height: 1; vertical-align: middle; box-shadow: 0 1px 2px rgba(0,0,0,.18); letter-spacing: 0; flex: 0 0 auto; }
+  .input-wrapper textarea { position: relative; z-index: 2; width: 100%; min-height: 240px; padding: 16px 18px; border: none; background: transparent; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: calc(18px * var(--fd-font-scale, 1)); line-height: 2.0; resize: none; outline: none; color: transparent; caret-color: #1f2937; white-space: pre; overflow: auto; scrollbar-gutter: stable; display: block; }
   .input-wrapper textarea::placeholder { color: #94a3b8; font-weight: normal; font-size: 14px; }
   .input-wrapper textarea::selection { background: #bfdbfe; color: transparent; }
 
@@ -40,7 +40,7 @@
   .toolbar input[type="number"] { width: 72px; padding: 7px 8px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; text-align: center; outline: none; }
   .toolbar input[type="number"]:focus { border-color: #2563eb; }
 
-  .ref-wrapper { display: flex; align-items: flex-start; gap: 8px; flex-wrap: wrap; width: 100%; }
+  .ref-wrapper { display: flex; align-items: flex-start; gap: 8px; flex-wrap: wrap; width: 100%; position: relative; }
   .ref-label { font-size: 13px; color: #475569; white-space: nowrap; padding-top: 10px; }
   .ref-group { display: flex; flex-wrap: wrap; gap: 6px; background: #f1f5f9; padding: 4px; border-radius: 10px; }
   .ref-btn { background: transparent; border: none; padding: 5px 10px 4px; border-radius: 7px; font-size: 13px; color: #475569; cursor: pointer; transition: .15s; font-family: inherit; font-weight: 500; display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 62px; }
@@ -53,6 +53,81 @@
   .ref-streak.hidden { display: block !important; visibility: hidden; }
 
   #refDigitGroup .ref-btn { min-width: 52px; }
+
+  /* ===== 开奖数据字号缩放 ===== */
+  .fd-size-group {
+    margin-left: auto;
+    display: inline-flex;
+    gap: 3px;
+    background: #f1f5f9;
+    padding: 3px;
+    border-radius: 8px;
+  }
+  .fd-size-btn {
+    border: none;
+    background: transparent;
+    min-width: 34px;
+    height: 22px;
+    padding: 0 8px;
+    border-radius: 5px;
+    font-size: 12px;
+    color: #475569;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: .15s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .fd-size-btn:hover { background: #e2e8f0; }
+  .fd-size-btn.active {
+    background: #2563eb;
+    color: #fff;
+    box-shadow: 0 1px 3px rgba(37,99,235,.4);
+  }
+
+  /* ===== 备注文本框（绝对定位，不撑高行高，右对齐） ===== */
+  .note-input-wrap {
+    position: absolute;
+    right: 0;
+    top: 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding-top: 2px;
+    flex: 0 0 auto;
+  }
+  .note-input-wrap .ref-label {
+    padding-top: 8px;
+  }
+  .note-input {
+    width: 200px;
+    min-height: 114px;
+    max-height: 240px;
+    padding: 8px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    color: #1f2937;
+    background: #f8fafc;
+    outline: none;
+    resize: vertical;
+    line-height: 1.5;
+    transition: border-color .15s, background .15s, box-shadow .15s;
+    box-sizing: border-box;
+  }
+  .note-input::placeholder { color: #94a3b8; }
+  .note-input:focus {
+    border-color: #2563eb;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+  }
+  @media (max-width: 860px) {
+    .note-input-wrap { position: static; width: 100%; }
+    .note-input { width: 100%; }
+  }
 
   button.btn-main { background: #2563eb; color: #fff; }
   button.btn-main:hover { background: #1d4ed8; }
@@ -154,7 +229,6 @@
 
   .err { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; border-radius: 10px; padding: 10px 14px; font-size: 13px; margin-top: 12px; }
   .hidden { display: none !important; }
-  .note-line { font-size: 12px; color: #64748b; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e2e8f0; }
   .tip-new { display: inline-block; font-size: 12px; color: #1d4ed8; background: #dbeafe; border-radius: 20px; padding: 2px 10px; margin-left: 6px; }
 
   .toast { position: fixed; right: 24px; bottom: 24px; padding: 12px 20px; background: #0f172a; color: #fff; border-radius: 10px; font-size: 14px; box-shadow: 0 6px 24px rgba(0,0,0,.25); z-index: 9999; animation: toast-in .3s ease-out; pointer-events: none; max-width: 380px; }
@@ -202,7 +276,6 @@
   .trend-col .tx.big   { color: #ef4444; }
   .trend-col .tx.small { color: #334155; }
 
-  /* 走势卡片放在右列时撑满剩余空间 */
   .data-right #trendBox {
     margin-bottom: 0;
     display: flex;
@@ -213,7 +286,6 @@
   .data-right #trendBox.hidden { display: none !important; }
   .data-right #trendBox .trend-scroll { flex: 1 1 auto; min-height: 96px; }
 
-  /* 走势位置选择按钮组（中文，独立于参考位/参考号） */
   .trend-pos-group {
     display: inline-flex;
     gap: 3px;
@@ -246,9 +318,7 @@
     box-shadow: 0 1px 3px rgba(37,99,235,.4);
   }
 
-  /* 走势显示范围：单按钮切换（50期 / 全部） */
   .trend-limit-btn {
-    margin-left: auto;
     border: 1px solid #cbd5e1;
     background: #f8fafc;
     color: #475569;
@@ -267,6 +337,8 @@
     color: #fff;
     box-shadow: 0 1px 3px rgba(37,99,235,.4);
   }
+  #trendAutoBtn { margin-left: auto; }
+  #trendLimitBtn { margin-left: 8px; }
 </style>
 </head>
 <body>
@@ -289,11 +361,19 @@
   </div>
 
   <div class="card">
-    <div class="card-title">开奖数据 <span class="tip-new">降序排列 · 最新在上</span></div>
+    <div class="card-title">
+      开奖数据 <span class="tip-new">降序排列 · 最新在上</span>
+      <span class="fd-size-group" id="fdSizeGroup">
+        <button class="fd-size-btn" data-scale="0.75">小</button>
+        <button class="fd-size-btn active" data-scale="1">中</button>
+        <button class="fd-size-btn" data-scale="1.45">大</button>
+        <button class="fd-size-btn" data-scale="1.52">特大</button>
+      </span>
+    </div>
 
     <div class="data-grid">
       <div class="data-left">
-        <div class="input-wrapper">
+        <div class="input-wrapper" id="inputWrapper">
           <div class="colored-display" id="coloredDisplay"></div>
           <textarea id="input" placeholder="每行一条，格式：期号 + 号码
 最新数据在最上面，往下是历史数据。"></textarea>
@@ -320,11 +400,9 @@
 
           <label>历史
             <select id="historyPages">
-              <option value="1">50 期</option>
-              <option value="2">100 期</option>
-              <option value="5" selected>250 期</option>
-              <option value="10">500 期</option>
-              <option value="20">1000 期</option>
+              <option value="1">1 页</option>
+              <option value="2" selected>2 页</option>
+              <option value="all">全部</option>
             </select>
           </label>
           <button class="btn-history" id="btnHistory" onclick="onClickFetchHistory()">拉取历史</button>
@@ -340,7 +418,6 @@
           <span class="p-nums" id="pNums">----</span>
         </div>
 
-        <!-- ================= 大小走势 ================= -->
         <div id="trendBox" class="card hidden">
           <div class="card-title">
             大小走势
@@ -356,6 +433,7 @@
               <button class="trend-pos-btn" data-pos="9">九</button>
               <button class="trend-pos-btn" data-pos="10">十</button>
             </span>
+            <button class="trend-limit-btn" id="trendAutoBtn" title="让走势位置自动跟随下期投注位">跟随投注位</button>
             <button class="trend-limit-btn" id="trendLimitBtn">默认显示50期</button>
           </div>
           <div class="trend-scroll" id="trendScroll">
@@ -379,6 +457,11 @@
           <button class="ref-btn" data-pos="8"><span class="ref-name">第八位</span><span class="ref-streak hidden"></span></button>
           <button class="ref-btn" data-pos="9"><span class="ref-name">第九位</span><span class="ref-streak hidden"></span></button>
           <button class="ref-btn" data-pos="10"><span class="ref-name">第十位</span><span class="ref-streak hidden"></span></button>
+        </div>
+
+        <div class="note-input-wrap">
+          <span class="ref-label">备注</span>
+          <textarea id="noteInput" class="note-input" placeholder="写点备注…（自动保存）" rows="5" spellcheck="false"></textarea>
         </div>
       </div>
 
@@ -420,10 +503,6 @@
         </thead>
         <tbody id="cycleBody"></tbody>
       </table>
-    </div>
-    <div class="note-line">
-      命中周期 = 1 表示起点期的下一期即命中；周期越大表示连续投注越多期才命中。
-      投注位置与投注号码在起点期确定后<b>固定不变</b>，逐期投到命中为止。
     </div>
     <div class="cycle-stats-compact"><div id="cycleStats" class="stats"></div></div>
     <div id="cycleDist" class="dist-box hidden">
@@ -495,7 +574,7 @@ const CN = ['一','二','三','四','五','六','七','八','九','十'];
 const refPosName = pos => '第' + (CN[pos - 1] || pos) + '位';
 
 const SEPARATOR = ' ';
-const NUM_SEPARATOR = ' ';
+const NUM_SEPARATOR = '';
 
 /* ================= 状态 ================= */
 const LS_KEY = 'pk10_input_v1';
@@ -507,6 +586,9 @@ const REF_MODE_KEY = 'pk10_ref_mode_v1';
 const REF_VALUE_KEY = 'pk10_ref_value_v1';
 const TREND_LIMIT_KEY = 'pk10_trend_limit_v1';
 const TREND_POS_KEY = 'pk10_trend_pos_v1';
+const TREND_POS_AUTO_KEY = 'pk10_trend_pos_auto_v1';
+const NOTE_KEY = 'pk10_note_v1';
+const FD_SIZE_KEY = 'pk10_fd_size_v1';
 const DEFAULT_DISPLAY_COUNT = 10;
 
 let autoFetchTimer = null;
@@ -518,11 +600,49 @@ let fullData = [];
 let showAllRecords = false;
 let showBacktest = false;
 
-/* 走势显示限制：数字（期数）或 'all' */
 let trendLimit = 50;
-
-/* 走势显示位置：1-10，独立于参考位/参考号 */
 let trendPos = 1;
+let trendPosAuto = true;
+
+let fdScale = 1;
+
+/* ================= 开奖数据字号缩放 ================= */
+function applyFdScale() {
+  const wrap = document.querySelector('.input-wrapper');
+  if (wrap) wrap.style.setProperty('--fd-font-scale', fdScale);
+  document.querySelectorAll('#fdSizeGroup .fd-size-btn').forEach(b => {
+    b.classList.toggle('active', parseFloat(b.dataset.scale) === fdScale);
+  });
+  fitInputHeight();
+}
+
+/* ================= 输入框高度自适应（行数决定，无滚动条） ================= */
+function fitInputHeight() {
+  const wrap = document.getElementById('inputWrapper');
+  const textarea = document.getElementById('input');
+  if (!wrap || !textarea) return;
+
+  const lines = Math.max(1, (textarea.value || '').split('\n').length);
+  const lineHeightPx = 18 * fdScale * 2.0;   // 基础字号 × 缩放 × 行高(2.0)
+  const padding = 16 * 2;                     // 上下 padding
+  const border = 2;                           // 上下 border
+  const naturalHeight = lines * lineHeightPx + padding + border;
+
+  const MAX_AUTO = 900;   // 自动撑高的上限
+  const MIN_H = 240;      // 最小高度
+  const OVERFLOW_H = 640; // 超过上限时的固定高度
+
+  let h;
+  if (naturalHeight <= MAX_AUTO) {
+    h = Math.max(MIN_H, Math.ceil(naturalHeight));
+  } else {
+    h = OVERFLOW_H;
+  }
+  wrap.style.height = h + 'px';
+  wrap.style.minHeight = h + 'px';
+  textarea.style.height = (h - padding - border) + 'px';
+  textarea.style.minHeight = (h - padding - border) + 'px';
+}
 
 /* ================= 参考选择（位 / 号） ================= */
 function currentRef() {
@@ -619,10 +739,11 @@ function renderColoredDisplay() {
   const display = document.getElementById('coloredDisplay');
   if (!textarea || !display) return;
   const text = textarea.value;
-  if (!text) { display.textContent = ''; return; }
+  if (!text) { display.textContent = ''; fitInputHeight(); return; }
   display.innerHTML = text.split('\n').map(renderColoredLine).join('\n');
   display.scrollTop = textarea.scrollTop;
   display.scrollLeft = textarea.scrollLeft;
+  fitInputHeight();
 }
 
 /* ================= 显示控制 ================= */
@@ -639,7 +760,7 @@ function updateToggleButtonText() {
   btn.textContent = showAllRecords ? `仅显示最新${DEFAULT_DISPLAY_COUNT}期` : `显示全部`;
 }
 
-/* ================= 走势显示范围：单按钮切换 50期 / 全部 ================= */
+/* ================= 走势显示范围 ================= */
 function applyTrendLimitUI() {
   const btn = document.getElementById('trendLimitBtn');
   if (!btn) return;
@@ -659,18 +780,26 @@ function toggleTrendLimit() {
   setTrendLimit(trendLimit === 'all' ? 50 : 'all');
 }
 
-/* ================= 走势位置切换（独立于参考位/参考号） ================= */
+/* ================= 走势位置切换 ================= */
 function applyTrendPosUI() {
   document.querySelectorAll('#trendPosGroup .trend-pos-btn').forEach(b => {
     b.classList.toggle('active', parseInt(b.dataset.pos, 10) === trendPos);
   });
+  const autoBtn = document.getElementById('trendAutoBtn');
+  if (autoBtn) autoBtn.classList.toggle('all-on', trendPosAuto);
 }
 
-function setTrendPos(pos) {
+function setTrendPos(pos, auto = false) {
   trendPos = parseInt(pos, 10) || 1;
   if (trendPos < 1) trendPos = 1;
   if (trendPos > 10) trendPos = 10;
-  try { localStorage.setItem(TREND_POS_KEY, String(trendPos)); } catch (e) {}
+
+  if (!auto) {
+    trendPosAuto = false;
+    try { localStorage.setItem(TREND_POS_KEY, String(trendPos)); } catch (e) {}
+    try { localStorage.setItem(TREND_POS_AUTO_KEY, 'false'); } catch (e) {}
+  }
+
   applyTrendPosUI();
   if (fullData.length >= 2) renderTrend(fullData);
 }
@@ -773,7 +902,6 @@ document.addEventListener('visibilitychange', () => {
 });
 
 /* ================= 数据抓取（API） ================= */
-// 代理列表（仅作兜底；CF Worker 因到国内接口超时，放最后）
 const PROXY_URLS = [
   'https://api.codetabs.com/v1/proxy?quest=',
   'https://cors.isomorphic-git.org/',
@@ -781,7 +909,6 @@ const PROXY_URLS = [
   'https://pk10-proxy.liahongyu.workers.dev/?url='
 ];
 
-// API 候选源
 const API_CANDIDATES = [
   'https://api.api68.com/pks/getPksHistoryList.do?lotCode=10037',
   'https://api.api68.com/lottery/getPksHistoryList.do?lotCode=10037',
@@ -856,13 +983,11 @@ async function tryFetch(url, timeoutMs = 8000) {
 async function fetchPageFromAPI(pageNo, pageSize = 50) {
   let lastErr = null;
 
-  // 遍历所有 API 源
   for (const base of API_CANDIDATES) {
     let url = base;
     if (!url.includes('pageNo=')) url += `&pageNo=${pageNo}`;
     if (!url.includes('pageSize=')) url += `&pageSize=${pageSize}`;
 
-    // 候选顺序：先直连，再走代理
     const candidates = [
       { url: url, label: '直连' },
       ...PROXY_URLS.map(p => ({ url: p + encodeURIComponent(url), label: p.split('/')[2] }))
@@ -901,7 +1026,7 @@ function sortAsc(arr) {
   return arr;
 }
 
-/* ================= 立即获取（仅最新一期） ================= */
+/* ================= 立即获取 ================= */
 async function fetchLatest(isManual = false) {
   if (fetching) return;
   fetching = true;
@@ -941,7 +1066,8 @@ async function fetchLatest(isManual = false) {
 
 /* ================= 拉取历史 ================= */
 async function onClickFetchHistory() {
-  const pages = parseInt(document.getElementById('historyPages')?.value, 10) || 5;
+  const raw = document.getElementById('historyPages')?.value || '2';
+  const pages = (raw === 'all') ? 'all' : parseInt(raw, 10);
   const btn = document.getElementById('btnHistory');
   if (fetching) {
     const oldText = btn ? btn.textContent : '';
@@ -961,12 +1087,15 @@ async function onClickFetchHistory() {
   await fetchHistory(pages, true);
 }
 
-async function fetchHistory(pages = 5, isManual = false) {
+async function fetchHistory(pages = 2, isManual = false) {
   if (fetching) {
     if (isManual) setFetchStatus('正在获取中，请稍候...', true);
     return;
   }
   fetching = true;
+
+  const isAll = (pages === 'all');
+  const maxPages = isAll ? 100 : pages;
 
   const btn = document.getElementById('btnHistory');
   const oldText = btn ? btn.textContent : '';
@@ -977,9 +1106,11 @@ async function fetchHistory(pages = 5, isManual = false) {
     const map = readExistingMap();
     let newCount = 0;
     let fetchedPages = 0;
+    let emptyPages = 0;
 
-    for (let p = 1; p <= pages; p++) {
-      setFetchStatus(`拉取历史中... ${p}/${pages} 页（已新增 ${newCount} 期）`);
+    for (let p = 1; p <= maxPages; p++) {
+      const totalLabel = isAll ? '全部' : `${pages}`;
+      setFetchStatus(`拉取历史中... ${p}/${totalLabel} 页（已新增 ${newCount} 期）`);
       let recs;
       try {
         recs = await fetchPageFromAPI(p, 50);
@@ -988,12 +1119,22 @@ async function fetchHistory(pages = 5, isManual = false) {
         console.warn(`第 ${p} 页失败，已保留前 ${p - 1} 页:`, pageErr);
         break;
       }
-      if (!recs.length) break;
+      if (!recs.length) {
+        if (isAll && ++emptyPages >= 2) break;
+        if (!isAll) break;
+        continue;
+      }
+      emptyPages = 0;
       fetchedPages = p;
+
+      let addedThisPage = 0;
       recs.forEach(r => {
-        if (!map.has(r.issue)) { map.set(r.issue, r); newCount++; }
+        if (!map.has(r.issue)) { map.set(r.issue, r); newCount++; addedThisPage++; }
       });
-      if (p < pages) await new Promise(r => setTimeout(r, 300));
+
+      if (isAll && addedThisPage === 0 && p > 1) break;
+
+      if (p < maxPages) await new Promise(r => setTimeout(r, 250));
     }
 
     if (!map.size) throw new Error('接口未返回任何数据（请查看 Console [API] 日志）');
@@ -1188,10 +1329,22 @@ function updateRefStreaks(data) {
     applyStreak(btn, { mode: 'digit', digit: btn.dataset.digit }));
 }
 
-/* ================= 渲染：大小走势 =================
- * 走势位置由 trendPos（1-10）独立控制，与参考位/参考号完全解耦。
- */
+/* ================= 渲染：大小走势 ================= */
 function renderTrend(data) {
+  if (trendPosAuto && data && data.length >= 2) {
+    try {
+      const ref = currentRef();
+      const lastIdx = data.length - 1;
+      const pred = makePrediction(data, lastIdx, ref);
+      if (pred && pred.betPos >= 1 && pred.betPos <= 10) {
+        const changed = (pred.betPos !== trendPos);
+        trendPos = pred.betPos;
+        applyTrendPosUI();
+        if (changed) console.log(`[趋势] 自动跟随投注位 → 第${trendPos}位`);
+      }
+    } catch (e) { /* 忽略 */ }
+  }
+
   const card = document.getElementById('trendBox');
   const cols = document.getElementById('trendCols');
   if (!card || !cols) return;
@@ -1203,12 +1356,10 @@ function renderTrend(data) {
 
   const posIdx = trendPos - 1;
 
-  // 按显示范围截取（最新一期在最右，取末尾 N 期）
   const source = (trendLimit === 'all' || !Number.isFinite(trendLimit))
     ? data
     : data.slice(Math.max(0, data.length - trendLimit));
 
-  // 把每期归类并合并连续相同大小
   const groups = [];
   for (let i = 0; i < source.length; i++) {
     const raw = source[i].nums[posIdx];
@@ -1219,7 +1370,6 @@ function renderTrend(data) {
     else groups.push({ type, count: 1 });
   }
 
-  // 渲染成列
   const html = groups.map(g => {
     const label = g.type === 'big' ? '大' : '小';
     let inner = '';
@@ -1231,7 +1381,6 @@ function renderTrend(data) {
   cols.innerHTML = html;
   card.classList.remove('hidden');
 
-  // 滚动到最右端（最新一期）
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       const sc = document.getElementById('trendScroll');
@@ -1605,6 +1754,24 @@ window.addEventListener('DOMContentLoaded', () => {
   const textarea = document.getElementById('input');
   const display = document.getElementById('coloredDisplay');
 
+  /* 恢复字号缩放 */
+  try {
+    const saved = localStorage.getItem(FD_SIZE_KEY);
+    if (saved) {
+      const n = parseFloat(saved);
+      if (Number.isFinite(n) && n >= 0.5 && n <= 2.5) fdScale = n;
+    }
+  } catch (e) {}
+  applyFdScale();
+
+  document.querySelectorAll('#fdSizeGroup .fd-size-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      fdScale = parseFloat(btn.dataset.scale);
+      try { localStorage.setItem(FD_SIZE_KEY, String(fdScale)); } catch (e) {}
+      applyFdScale();
+    });
+  });
+
   const soundChk = document.getElementById('soundEnabled');
   if (soundChk) {
     try {
@@ -1613,6 +1780,23 @@ window.addEventListener('DOMContentLoaded', () => {
     } catch (e) {}
     soundChk.addEventListener('change', function () {
       try { localStorage.setItem(SOUND_KEY, this.checked ? 'true' : 'false'); } catch (e) {}
+    });
+  }
+
+  const noteEl = document.getElementById('noteInput');
+  if (noteEl) {
+    try {
+      const savedNote = localStorage.getItem(NOTE_KEY);
+      if (savedNote !== null) noteEl.value = savedNote;
+    } catch (e) {}
+    noteEl.addEventListener('input', () => {
+      try { localStorage.setItem(NOTE_KEY, noteEl.value); } catch (e) {}
+    });
+    noteEl.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        try { localStorage.setItem(NOTE_KEY, noteEl.value); } catch (err) {}
+        showToast('✓ 备注已保存');
+      }
     });
   }
 
@@ -1628,7 +1812,6 @@ window.addEventListener('DOMContentLoaded', () => {
   } catch (e) {}
   applyBacktestVisibility();
 
-  /* 恢复走势显示范围 */
   try {
     const saved = localStorage.getItem(TREND_LIMIT_KEY);
     if (saved === 'all') {
@@ -1640,29 +1823,43 @@ window.addEventListener('DOMContentLoaded', () => {
   } catch (e) {}
   applyTrendLimitUI();
 
-  /* 走势范围切换按钮（单按钮） */
   const trendLimitBtn = document.getElementById('trendLimitBtn');
   if (trendLimitBtn) {
     trendLimitBtn.addEventListener('click', toggleTrendLimit);
   }
 
-  /* 恢复走势位置（独立状态） */
   try {
+    const autoSaved = localStorage.getItem(TREND_POS_AUTO_KEY);
     const saved = localStorage.getItem(TREND_POS_KEY);
-    if (saved) {
-      const n = parseInt(saved, 10);
-      if (Number.isFinite(n) && n >= 1 && n <= 10) trendPos = n;
+    if (autoSaved === 'false') {
+      trendPosAuto = false;
+      if (saved) {
+        const n = parseInt(saved, 10);
+        if (Number.isFinite(n) && n >= 1 && n <= 10) trendPos = n;
+      }
+    } else {
+      trendPosAuto = true;
     }
   } catch (e) {}
   applyTrendPosUI();
 
-  /* 走势位置按钮事件 */
   const trendPosGroup = document.getElementById('trendPosGroup');
   if (trendPosGroup) {
     trendPosGroup.addEventListener('click', (e) => {
       const btn = e.target.closest('.trend-pos-btn');
       if (!btn) return;
-      setTrendPos(btn.dataset.pos);
+      setTrendPos(btn.dataset.pos, false);
+    });
+  }
+
+  const autoBtn = document.getElementById('trendAutoBtn');
+  if (autoBtn) {
+    autoBtn.addEventListener('click', () => {
+      trendPosAuto = true;
+      try { localStorage.setItem(TREND_POS_AUTO_KEY, 'true'); } catch (e) {}
+      if (fullData.length >= 2) renderTrend(fullData);
+      applyTrendPosUI();
+      showToast('✓ 走势位置已跟随投注位');
     });
   }
 
@@ -1679,7 +1876,6 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  /* 恢复上次的参考选择（位 / 号） */
   try {
     const savedMode = localStorage.getItem(REF_MODE_KEY);
     const savedValue = localStorage.getItem(REF_VALUE_KEY);
@@ -1728,6 +1924,7 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     }
   } catch (e) {}
+  fitInputHeight();
 
   textarea.addEventListener('input', () => {
     userDirty = true;
@@ -1777,6 +1974,8 @@ window.addEventListener('DOMContentLoaded', () => {
       refGroup.querySelectorAll('.ref-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       persistRef();
+      trendPosAuto = true;
+      try { localStorage.setItem(TREND_POS_AUTO_KEY, 'true'); } catch (e) {}
       if (fullData.length >= 2) run();
     });
   }
@@ -1790,6 +1989,8 @@ window.addEventListener('DOMContentLoaded', () => {
       refDigitGroup.querySelectorAll('.ref-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       persistRef();
+      trendPosAuto = true;
+      try { localStorage.setItem(TREND_POS_AUTO_KEY, 'true'); } catch (e) {}
       if (fullData.length >= 2) run();
     });
   }
