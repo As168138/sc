@@ -53,6 +53,7 @@
   .ref-streak.hidden { display: block !important; visibility: hidden; }
 
   #refDigitGroup .ref-btn { min-width: 52px; }
+  #refComboGroup .ref-btn { min-width: 54px; }
 
   /* ===== 开奖数据字号缩放 ===== */
   .fd-size-group {
@@ -87,7 +88,7 @@
     box-shadow: 0 1px 3px rgba(37,99,235,.4);
   }
 
-  /* ===== 备注文本框（绝对定位，不撑高行高，右对齐） ===== */
+  /* ===== 备注文本框 ===== */
   .note-input-wrap {
     position: absolute;
     right: 0;
@@ -98,9 +99,7 @@
     padding-top: 2px;
     flex: 0 0 auto;
   }
-  .note-input-wrap .ref-label {
-    padding-top: 8px;
-  }
+  .note-input-wrap .ref-label { padding-top: 8px; }
   .note-input {
     width: 200px;
     min-height: 114px;
@@ -135,7 +134,7 @@
   button.btn-ghost:hover { background: #cbd5e1; }
   button.btn-clear { background: #fee2e2; color: #b91c1c; }
   button.btn-clear:hover { background: #fecaca; }
-  button.btn-toggle { background: #e0f2fe; color: #0369a1; }
+  button.btn-toggle { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
   button.btn-toggle:hover { background: #bae6fd; }
   button.btn-backtest { background: #f3e8ff; color: #7c3aed; }
   button.btn-backtest:hover { background: #e9d5ff; }
@@ -445,7 +444,7 @@
 
     <div class="toolbar">
       <div class="ref-wrapper">
-        <span class="ref-label">参考位</span>
+        <span class="ref-label">规则一</span>
         <div class="ref-group" id="refGroup">
           <button class="ref-btn active" data-pos="1"><span class="ref-name">第一位</span><span class="ref-streak hidden"></span></button>
           <button class="ref-btn" data-pos="2"><span class="ref-name">第二位</span><span class="ref-streak hidden"></span></button>
@@ -466,7 +465,7 @@
       </div>
 
       <div class="ref-wrapper">
-        <span class="ref-label">参考号</span>
+        <span class="ref-label">规则二</span>
         <div class="ref-group" id="refDigitGroup">
           <button class="ref-btn" data-digit="1"><span class="ref-name">1</span><span class="ref-streak hidden"></span></button>
           <button class="ref-btn" data-digit="2"><span class="ref-name">2</span><span class="ref-streak hidden"></span></button>
@@ -481,6 +480,22 @@
         </div>
       </div>
 
+      <div class="ref-wrapper">
+        <span class="ref-label">规则三</span>
+        <div class="ref-group" id="refComboGroup">
+          <button class="ref-btn" data-combo="1"><span class="ref-name">第1位</span><span class="ref-streak hidden"></span></button>
+          <button class="ref-btn" data-combo="2"><span class="ref-name">第2位</span><span class="ref-streak hidden"></span></button>
+          <button class="ref-btn" data-combo="3"><span class="ref-name">第3位</span><span class="ref-streak hidden"></span></button>
+          <button class="ref-btn" data-combo="4"><span class="ref-name">第4位</span><span class="ref-streak hidden"></span></button>
+          <button class="ref-btn" data-combo="5"><span class="ref-name">第5位</span><span class="ref-streak hidden"></span></button>
+          <button class="ref-btn" data-combo="6"><span class="ref-name">第6位</span><span class="ref-streak hidden"></span></button>
+          <button class="ref-btn" data-combo="7"><span class="ref-name">第7位</span><span class="ref-streak hidden"></span></button>
+          <button class="ref-btn" data-combo="8"><span class="ref-name">第8位</span><span class="ref-streak hidden"></span></button>
+          <button class="ref-btn" data-combo="9"><span class="ref-name">第9位</span><span class="ref-streak hidden"></span></button>
+          <button class="ref-btn" data-combo="10"><span class="ref-name">第10位</span><span class="ref-streak hidden"></span></button>
+        </div>
+      </div>
+
       <label>统计最近 <input type="number" id="windowSize" value="20" min="3" max="500"> 期作为起点</label>
       <button class="btn-main" onclick="run()">开始分析</button>
       <button class="btn-toggle" id="toggleViewBtn" onclick="toggleShowAll()">显示全部</button>
@@ -489,6 +504,32 @@
       <button class="btn-clear" onclick="clearAll()">清空</button>
     </div>
     <div id="err" class="err hidden"></div>
+  </div>
+
+  <!-- 组合规则 1-10 位命中周期追踪汇总表 -->
+  <div id="posStatsBox" class="card hidden">
+    <div class="card-title">
+      组合规则统计（命中周期追踪汇总 - 本期第 k 位 × 上期第 k 位）
+      <button class="btn-toggle" id="togglePosStatsBtn" style="margin-left: auto; padding: 6px 16px; font-size: 13px; font-weight: 600; border-radius: 8px;" onclick="togglePosStatsVisibility()">👁️ 隐藏表格</button>
+    </div>
+    <div class="table-box" id="posStatsTableBox">
+      <table style="min-width: 100%;">
+        <thead>
+          <tr>
+            <th>组合位</th>
+            <th>追踪起点数</th>
+            <th>命中起点数</th>
+            <th>未命中起点</th>
+            <th>平均命中周期</th>
+            <th>最快命中</th>
+            <th>最慢命中</th>
+            <th>中位周期</th>
+            <th>区间内命中率</th>
+          </tr>
+        </thead>
+        <tbody id="posStatsBody"></tbody>
+      </table>
+    </div>
   </div>
 
   <div id="cycleBox" class="card hidden">
@@ -589,6 +630,7 @@ const TREND_POS_KEY = 'pk10_trend_pos_v1';
 const TREND_POS_AUTO_KEY = 'pk10_trend_pos_auto_v1';
 const NOTE_KEY = 'pk10_note_v1';
 const FD_SIZE_KEY = 'pk10_fd_size_v1';
+const POS_STATS_SHOW_KEY = 'pk10_pos_stats_show_v1';
 const DEFAULT_DISPLAY_COUNT = 10;
 
 let autoFetchTimer = null;
@@ -605,6 +647,7 @@ let trendPos = 1;
 let trendPosAuto = true;
 
 let fdScale = 1;
+let showPosStatsTable = true;
 
 /* ================= 开奖数据字号缩放 ================= */
 function applyFdScale() {
@@ -616,21 +659,21 @@ function applyFdScale() {
   fitInputHeight();
 }
 
-/* ================= 输入框高度自适应（行数决定，无滚动条） ================= */
+/* ================= 输入框高度自适应 ================= */
 function fitInputHeight() {
   const wrap = document.getElementById('inputWrapper');
   const textarea = document.getElementById('input');
   if (!wrap || !textarea) return;
 
   const lines = Math.max(1, (textarea.value || '').split('\n').length);
-  const lineHeightPx = 18 * fdScale * 2.0;   // 基础字号 × 缩放 × 行高(2.0)
-  const padding = 16 * 2;                     // 上下 padding
-  const border = 2;                           // 上下 border
+  const lineHeightPx = 18 * fdScale * 2.0;
+  const padding = 16 * 2;
+  const border = 2;
   const naturalHeight = lines * lineHeightPx + padding + border;
 
-  const MAX_AUTO = 900;   // 自动撑高的上限
-  const MIN_H = 240;      // 最小高度
-  const OVERFLOW_H = 640; // 超过上限时的固定高度
+  const MAX_AUTO = 900;
+  const MIN_H = 240;
+  const OVERFLOW_H = 640;
 
   let h;
   if (naturalHeight <= MAX_AUTO) {
@@ -644,8 +687,11 @@ function fitInputHeight() {
   textarea.style.minHeight = (h - padding - border) + 'px';
 }
 
-/* ================= 参考选择（位 / 号） ================= */
+/* ================= 参考选择 ================= */
 function currentRef() {
+  const comboActive = document.querySelector('#refComboGroup .ref-btn.active');
+  if (comboActive) return { mode: 'combo', k: parseInt(comboActive.dataset.combo, 10) };
+
   const digitActive = document.querySelector('#refDigitGroup .ref-btn.active');
   if (digitActive) return { mode: 'digit', digit: digitActive.dataset.digit };
   const posActive = document.querySelector('#refGroup .ref-btn.active');
@@ -653,6 +699,7 @@ function currentRef() {
 }
 
 function refLabel(ref) {
+  if (ref.mode === 'combo') return '组合(第' + (ref.k || 1) + '位)';
   if (ref.mode === 'digit') return '参考号 ' + (ref.digit === '0' ? '10' : ref.digit);
   return refPosName(ref.pos);
 }
@@ -661,8 +708,22 @@ function persistRef() {
   try {
     const ref = currentRef();
     localStorage.setItem(REF_MODE_KEY, ref.mode);
-    localStorage.setItem(REF_VALUE_KEY, ref.mode === 'digit' ? ref.digit : String(ref.pos));
+    localStorage.setItem(REF_VALUE_KEY, ref.mode === 'digit' ? ref.digit : ref.mode === 'pos' ? String(ref.pos) : String(ref.k || 1));
   } catch (e) {}
+}
+
+/* ================= 控制统计表显示/隐藏 ================= */
+function applyPosStatsVisibility() {
+  const tb = document.getElementById('posStatsTableBox');
+  const btn = document.getElementById('togglePosStatsBtn');
+  if (tb) tb.classList.toggle('hidden', !showPosStatsTable);
+  if (btn) btn.innerHTML = showPosStatsTable ? '👁️ 隐藏表格' : '👁️ 显示表格';
+}
+
+function togglePosStatsVisibility() {
+  showPosStatsTable = !showPosStatsTable;
+  try { localStorage.setItem(POS_STATS_SHOW_KEY, showPosStatsTable ? 'true' : 'false'); } catch (e) {}
+  applyPosStatsVisibility();
 }
 
 /* ================= Toast ================= */
@@ -1213,23 +1274,38 @@ function makePrediction(data, i, ref = 1) {
   const cur  = data[i];
   const prev = data[i - 1];
 
-  let refPos, refNum, selectPos;
+  let refPos, refNum, selectPos, selectNum;
 
-  if (ref.mode === 'digit') {
+  if (ref.mode === 'combo') {
+    refPos = ref.k || 1;
+    refNum = cur.nums[refPos - 1];
+    const prevNum = prev.nums[refPos - 1];
+    
+    selectPos = posFromDigit(refNum);
+    selectNum = prevNum;
+  } else if (ref.mode === 'digit') {
     refNum = ref.digit;
     const idx = cur.nums.indexOf(ref.digit);
     selectPos = idx >= 0 ? idx + 1 : 1;
     refPos = selectPos;
+    selectNum = cur.nums[selectPos - 1];
   } else {
     refPos = ref.pos;
     refNum = cur.nums[refPos - 1];
     selectPos = posFromDigit(refNum);
+    selectNum = cur.nums[selectPos - 1];
   }
 
-  const selectNum = cur.nums[selectPos - 1];
   const betNums   = BET_MAP[selectNum];
-  const prevSame  = prev.nums[selectPos - 1];
-  const betPos    = posFromDigit(prevSame);
+  
+  let betPos, prevSame;
+  if (ref.mode === 'combo') {
+    betPos = posFromDigit(refNum);
+    prevSame = prev.nums[refPos - 1];
+  } else {
+    prevSame = prev.nums[selectPos - 1];
+    betPos = posFromDigit(prevSame);
+  }
 
   return {
     selectIssue: cur.issue, prevIssue: prev.issue,
@@ -1327,6 +1403,81 @@ function updateRefStreaks(data) {
 
   document.querySelectorAll('#refDigitGroup .ref-btn').forEach(btn =>
     applyStreak(btn, { mode: 'digit', digit: btn.dataset.digit }));
+
+  document.querySelectorAll('#refComboGroup .ref-btn').forEach(btn =>
+    applyStreak(btn, { mode: 'combo', k: parseInt(btn.dataset.combo, 10) }));
+}
+
+/* ================= 1-10 位组合规则命中周期追踪汇总 ================= */
+function renderPosStats(data) {
+  const box = document.getElementById('posStatsBox');
+  const tbody = document.getElementById('posStatsBody');
+  if (!box || !tbody) return;
+
+  let n = parseInt(document.getElementById('windowSize').value, 10);
+  if (!Number.isFinite(n) || n < 3) n = 20;
+  if (n > 500) n = 500;
+
+  if (!data || data.length < 3) {
+    box.classList.add('hidden');
+    return;
+  }
+
+  const results = [];
+  for (let k = 1; k <= 10; k++) {
+    const ref = { mode: 'combo', k: k };
+    const rows = computeHitCycles(data, n, ref);
+    
+    const pendingRows = rows.filter(r => r.pending);
+    const hitRows = rows.filter(r => r.hit && !r.pending);
+    const missRows = rows.filter(r => !r.hit && !r.pending);
+    const cyclesArr = hitRows.map(r => r.cycles);
+    
+    const avg = cyclesArr.length ? cyclesArr.reduce((a, b) => a + b, 0) / cyclesArr.length : null;
+    const med = median(cyclesArr);
+    const minC = cyclesArr.length ? Math.min(...cyclesArr) : null;
+    const maxC = cyclesArr.length ? Math.max(...cyclesArr) : null;
+    const verifiedTotal = hitRows.length + missRows.length;
+    const hitRate = verifiedTotal ? hitRows.length / verifiedTotal : 0;
+    
+    results.push({
+      k,
+      total: rows.length,
+      hitCount: hitRows.length,
+      missCount: missRows.length,
+      avg,
+      med,
+      minC,
+      maxC,
+      rate: hitRate
+    });
+  }
+
+  tbody.innerHTML = '';
+  results.forEach(r => {
+    const tr = document.createElement('tr');
+    
+    tr.innerHTML = `
+      <td><b>第${CN[r.k - 1]}位</b></td>
+      <td>${r.total}</td>
+      <td class="hl" style="color:#059669;">${r.hitCount}</td>
+      <td style="color:#dc2626;">${r.missCount}</td>
+      <td>${r.avg !== null ? r.avg.toFixed(2) : '—'}</td>
+      <td>${r.minC !== null ? r.minC + ' 期' : '—'}</td>
+      <td>${r.maxC !== null ? r.maxC + ' 期' : '—'}</td>
+      <td>${r.med !== null ? r.med + ' 期' : '—'}</td>
+      <td>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-weight:bold;">${(r.rate * 100).toFixed(1)}%</span>
+          <div class="bar" style="margin:0;flex:1;height:6px;min-width:50px;"><i style="width:${(r.rate * 100).toFixed(1)}%;"></i></div>
+        </div>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  box.classList.remove('hidden');
+  applyPosStatsVisibility(); // 确保每次渲染后应用显示状态
 }
 
 /* ================= 渲染：大小走势 ================= */
@@ -1515,7 +1666,7 @@ function renderBacktest(data, ref) {
   const btDistRows = document.getElementById('btDistRows');
   tbody.innerHTML = ''; btDistRows.innerHTML = '';
   document.getElementById('thRef').textContent =
-    ref.mode === 'digit' ? '参考号' : refPosName(ref.pos) + '号码';
+    ref.mode === 'digit' ? '参考号' : ref.mode === 'combo' ? '组合位' : refPosName(ref.pos) + '号码';
   document.getElementById('sumRef').textContent = refLabel(ref);
 
   const rowsData = [];
@@ -1685,6 +1836,7 @@ function renderAll(data, options = {}) {
   updateRefStreaks(data);
   renderTrend(data);
   renderNextPrediction(data, ref);
+  renderPosStats(data);            // 渲染命中周期追踪表
   renderHitCycles(data, n, ref);
   if (showBacktest) renderBacktest(data, ref);
   if (rewriteTextarea) rewriteTextareaDesc(data);
@@ -1740,8 +1892,10 @@ function clearAll() {
   document.getElementById('pMain').classList.add('hidden');
   document.getElementById('cycleBox').classList.add('hidden');
   document.getElementById('trendBox').classList.add('hidden');
+  document.getElementById('posStatsBox').classList.add('hidden');
   document.getElementById('tbody').innerHTML = '';
   document.getElementById('cycleBody').innerHTML = '';
+  document.getElementById('posStatsBody').innerHTML = '';
   document.getElementById('trendCols').innerHTML = '';
   updateRefStreaks(null);
   applyBacktestVisibility();
@@ -1771,6 +1925,13 @@ window.addEventListener('DOMContentLoaded', () => {
       applyFdScale();
     });
   });
+
+  /* 恢复统计表显示/隐藏状态 */
+  try {
+    const saved = localStorage.getItem(POS_STATS_SHOW_KEY);
+    if (saved === 'false') showPosStatsTable = false;
+  } catch (e) {}
+  applyPosStatsVisibility();
 
   const soundChk = document.getElementById('soundEnabled');
   if (soundChk) {
@@ -1876,23 +2037,25 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  /* 恢复参考选择 */
   try {
     const savedMode = localStorage.getItem(REF_MODE_KEY);
     const savedValue = localStorage.getItem(REF_VALUE_KEY);
-    if (savedMode === 'digit' && savedValue !== null) {
+    
+    document.querySelectorAll('#refGroup .ref-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('#refDigitGroup .ref-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('#refComboGroup .ref-btn').forEach(b => b.classList.remove('active'));
+
+    if (savedMode === 'combo') {
+      const k = parseInt(savedValue, 10) || 1;
+      const btn = document.querySelector(`#refComboGroup .ref-btn[data-combo="${k}"]`);
+      if (btn) btn.classList.add('active');
+    } else if (savedMode === 'digit' && savedValue !== null) {
       const btn = document.querySelector(`#refDigitGroup .ref-btn[data-digit="${savedValue}"]`);
-      if (btn) {
-        document.querySelectorAll('#refGroup .ref-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('#refDigitGroup .ref-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-      }
+      if (btn) btn.classList.add('active');
     } else if (savedMode === 'pos' && savedValue !== null) {
       const btn = document.querySelector(`#refGroup .ref-btn[data-pos="${savedValue}"]`);
-      if (btn) {
-        document.querySelectorAll('#refGroup .ref-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('#refDigitGroup .ref-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-      }
+      if (btn) btn.classList.add('active');
     }
   } catch (e) {}
 
@@ -1971,6 +2134,7 @@ window.addEventListener('DOMContentLoaded', () => {
       const btn = e.target.closest('.ref-btn');
       if (!btn) return;
       document.querySelectorAll('#refDigitGroup .ref-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('#refComboGroup .ref-btn').forEach(b => b.classList.remove('active'));
       refGroup.querySelectorAll('.ref-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       persistRef();
@@ -1986,7 +2150,24 @@ window.addEventListener('DOMContentLoaded', () => {
       const btn = e.target.closest('.ref-btn');
       if (!btn) return;
       document.querySelectorAll('#refGroup .ref-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('#refComboGroup .ref-btn').forEach(b => b.classList.remove('active'));
       refDigitGroup.querySelectorAll('.ref-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      persistRef();
+      trendPosAuto = true;
+      try { localStorage.setItem(TREND_POS_AUTO_KEY, 'true'); } catch (e) {}
+      if (fullData.length >= 2) run();
+    });
+  }
+
+  const refComboGroup = document.getElementById('refComboGroup');
+  if (refComboGroup) {
+    refComboGroup.addEventListener('click', (e) => {
+      const btn = e.target.closest('.ref-btn');
+      if (!btn) return;
+      document.querySelectorAll('#refGroup .ref-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('#refDigitGroup .ref-btn').forEach(b => b.classList.remove('active'));
+      refComboGroup.querySelectorAll('.ref-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       persistRef();
       trendPosAuto = true;
