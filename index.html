@@ -128,6 +128,21 @@
     .note-input { width: 100%; }
   }
 
+  /* 期号范围输入框 */
+  .cross-range-input {
+    width: 110px;
+    padding: 4px 8px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 12px;
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    outline: none;
+    transition: border-color .15s;
+  }
+  .cross-range-input:focus {
+    border-color: #2563eb;
+  }
+
   button.btn-main { background: #2563eb; color: #fff; }
   button.btn-main:hover { background: #1d4ed8; }
   button.btn-ghost { background: #e2e8f0; color: #334155; }
@@ -532,6 +547,73 @@
     </div>
   </div>
 
+  <!-- 连错3追踪汇总 -->
+  <div id="crossPosStatsBox" class="card hidden">
+    <div class="card-title" style="justify-content: space-between;">
+      <span style="display:flex; align-items:center; gap:8px;">
+        <span>连错3追踪统计</span>
+        <select id="crossRuleSelect" style="padding: 2px 8px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 13px; outline: none; background:#fff; cursor:pointer;">
+          <option value="pos">规则一</option>
+          <option value="digit">规则二</option>
+          <option value="combo">规则三</option>
+        </select>
+      </span>
+      <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: normal; flex-wrap: wrap;">
+        <span style="color: #64748b;">期号范围：</span>
+        <input type="text" id="crossStartIssue" class="cross-range-input" placeholder="起始期号">
+        <span style="color: #64748b;">至</span>
+        <input type="text" id="crossEndIssue" class="cross-range-input" placeholder="结束期号">
+        <button class="btn-toggle" style="padding: 4px 10px; border-radius: 6px; font-size: 12px; margin-left: 4px;" onclick="applyCrossRange()">应用</button>
+        <button class="btn-ghost" style="padding: 4px 10px; border-radius: 6px; font-size: 12px;" onclick="resetCrossRange()">重置</button>
+      </div>
+    </div>
+    <div class="table-box">
+      <table style="min-width: 100%;">
+        <thead>
+          <tr>
+            <th>触发位置</th>
+            <th>追踪位置</th>
+            <th>触发次数</th>
+            <th>命中次数</th>
+            <th>未命中次数</th>
+            <th>待定次数</th>
+            <th>平均命中周期</th>
+            <th>最快命中</th>
+            <th>最慢命中</th>
+            <th>区间内命中率</th>
+          </tr>
+        </thead>
+        <tbody id="crossPosStatsBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 连错3追踪明细 -->
+  <div id="crossPosDetailBox" class="card hidden">
+    <div class="card-title" style="justify-content: space-between;">
+      <span style="display:flex; align-items:center; gap:8px;">
+        <span>连错3追踪明细（前一位连错3，下一位第几期命中）</span>
+      </span>
+      <button class="btn-toggle" id="toggleCrossDetailBtn" style="padding: 4px 10px; border-radius: 6px; font-size: 12px;" onclick="toggleCrossDetail()">显示全部</button>
+    </div>
+    <div class="table-box">
+      <table style="min-width: 100%;">
+        <thead>
+          <tr>
+            <th>触发位置</th>
+            <th>触发期号</th>
+            <th>追踪位置</th>
+            <th>追踪起点期号</th>
+            <th>命中周期</th>
+            <th>当前期投注(位置+号码)</th>
+            <th>状态</th>
+          </tr>
+        </thead>
+        <tbody id="crossPosDetailBody"></tbody>
+      </table>
+    </div>
+  </div>
+
   <div id="cycleBox" class="card hidden">
     <div class="card-title">命中周期追踪（最近 <span id="cycleN">20</span> 期作为起点 · <span id="cycleRef">第一位</span> · 位置与号码固定续投）</div>
     <div class="table-box track-scroll" id="cycleTableBox" style="margin-top:14px;">
@@ -648,6 +730,13 @@ let trendPosAuto = true;
 
 let fdScale = 1;
 let showPosStatsTable = true;
+
+let crossRangeStart = '';
+let crossRangeEnd = '';
+let crossRuleMode = null;
+
+let showAllCrossDetails = false;
+const DEFAULT_CROSS_DETAIL_COUNT = 20;
 
 /* ================= 开奖数据字号缩放 ================= */
 function applyFdScale() {
@@ -819,6 +908,15 @@ function updateToggleButtonText() {
   const btn = document.getElementById('toggleViewBtn');
   if (!btn) return;
   btn.textContent = showAllRecords ? `仅显示最新${DEFAULT_DISPLAY_COUNT}期` : `显示全部`;
+}
+
+/* ================= 连错3追踪明细 显示控制 ================= */
+function toggleCrossDetail() {
+  showAllCrossDetails = !showAllCrossDetails;
+  document.getElementById('toggleCrossDetailBtn').textContent = showAllCrossDetails ? '仅显示前20期' : '显示全部';
+  if (fullData.length >= 2) {
+    renderCrossPosStats(fullData);
+  }
 }
 
 /* ================= 走势显示范围 ================= */
@@ -1480,6 +1578,304 @@ function renderPosStats(data) {
   applyPosStatsVisibility(); // 确保每次渲染后应用显示状态
 }
 
+/* ================= 连错3追踪统计（适配全部规则） ================= */
+function getCrossFilteredData(data) {
+  if (!data || !data.length) return data;
+  let startIdx = 0;
+  let endIdx = data.length - 1;
+
+  if (crossRangeStart) {
+    const idx = data.findIndex(r => r.issue >= crossRangeStart);
+    if (idx !== -1) startIdx = idx;
+  }
+  if (crossRangeEnd) {
+    for (let i = data.length - 1; i >= 0; i--) {
+      if (data[i].issue <= crossRangeEnd) {
+        endIdx = i;
+        break;
+      }
+    }
+  }
+
+  if (startIdx > endIdx) return [];
+  return data.slice(startIdx, endIdx + 1);
+}
+
+function applyCrossRange() {
+  crossRangeStart = document.getElementById('crossStartIssue').value.trim();
+  crossRangeEnd = document.getElementById('crossEndIssue').value.trim();
+  if (fullData.length >= 2) {
+    renderCrossPosStats(fullData);
+  }
+}
+
+function resetCrossRange() {
+  document.getElementById('crossStartIssue').value = '';
+  document.getElementById('crossEndIssue').value = '';
+  crossRangeStart = '';
+  crossRangeEnd = '';
+  if (fullData.length >= 2) {
+    renderCrossPosStats(fullData);
+  }
+}
+
+function computeCrossPosStats(data, refMode) {
+  if (data.length < 5) return { summary: [], details: [] };
+  const summary = [];
+  const details = [];
+
+  const seq = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+  for (let idx = 0; idx < seq.length; idx++) {
+    const k = seq[idx];
+    const nextK = k === 10 ? 1 : k + 1;
+
+    let refK, refNextK, labelK, labelNextK;
+
+    if (refMode === 'pos') {
+      refK = { mode: 'pos', pos: k };
+      refNextK = { mode: 'pos', pos: nextK };
+      labelK = '第' + CN[k-1] + '位';
+      labelNextK = '第' + CN[nextK-1] + '位';
+    } else if (refMode === 'digit') {
+      const digitK = k === 10 ? '0' : String(k);
+      const digitNextK = nextK === 10 ? '0' : String(nextK);
+      refK = { mode: 'digit', digit: digitK };
+      refNextK = { mode: 'digit', digit: digitNextK };
+      labelK = '参考号 ' + k;
+      labelNextK = '参考号 ' + nextK;
+    } else {
+      refK = { mode: 'combo', k: k };
+      refNextK = { mode: 'combo', k: nextK };
+      labelK = '第' + k + '位';
+      labelNextK = '第' + nextK + '位';
+    }
+
+    const kHits = [];
+    for (let i = 1; i < data.length - 1; i++) {
+      const p = makePrediction(data, i, refK);
+      const next = data[i + 1];
+      const actual = next.nums[p.betPos - 1];
+      kHits.push({ 
+        index: i, 
+        issue: data[i].issue, 
+        isHit: p.betNums.includes(actual) 
+      });
+    }
+
+    const triggers = [];
+    let missStreak = 0;
+    for (let i = 0; i < kHits.length; i++) {
+      if (!kHits[i].isHit) {
+        missStreak++;
+        if (missStreak === 3) {
+          triggers.push({
+            index: kHits[i].index,
+            issue: kHits[i].issue,
+            nextIssue: data[kHits[i].index + 1].issue
+          });
+        }
+      } else {
+        missStreak = 0;
+      }
+    }
+
+    let hitCount = 0;
+    let missCount = 0;
+    let pendingCount = 0;
+    const cycles = [];
+
+    triggers.forEach(trig => {
+      let cycle = 0;
+      let hit = false;
+      let finalBetNums = '—';
+      let finalBetPos = 0;
+      let isPending = false;
+
+      for (let j = trig.index + 1; j <= data.length - 2; j++) {
+        cycle++;
+        const p = makePrediction(data, j, refNextK);
+        const next = data[j + 1];
+        const actual = next.nums[p.betPos - 1];
+        
+        finalBetNums = p.betNums;
+        finalBetPos = p.betPos;
+
+        if (p.betNums.includes(actual)) {
+          hit = true;
+          hitCount++;
+          cycles.push(cycle);
+          break;
+        }
+      }
+
+      if (!hit) {
+        if (trig.index + 1 <= data.length - 1) {
+          pendingCount++;
+          isPending = true;
+          
+          // 使用最新一期推算下一期的投注
+          const p = makePrediction(data, data.length - 1, refNextK);
+          finalBetNums = p.betNums;
+          finalBetPos = p.betPos;
+          cycle = data.length - 1 - (trig.index + 1);
+        } else {
+          missCount++;
+        }
+      }
+
+      details.push({
+        labelK: labelK,
+        triggerIssue: trig.issue,
+        labelNextK: labelNextK,
+        startIssue: trig.nextIssue,
+        cycle: cycle,
+        finalBetPos: finalBetPos,
+        finalBetNums: finalBetNums,
+        status: hit ? 'hit' : (isPending ? 'pending' : 'miss')
+      });
+    });
+
+    const totalTriggers = triggers.length;
+    const avg = cycles.length ? cycles.reduce((a,b)=>a+b,0)/cycles.length : null;
+    const minC = cycles.length ? Math.min(...cycles) : null;
+    const maxC = cycles.length ? Math.max(...cycles) : null;
+    const rate = totalTriggers ? hitCount / totalTriggers : 0;
+
+    summary.push({
+      labelK: labelK,
+      labelNextK: labelNextK,
+      totalTriggers,
+      hitCount,
+      missCount,
+      pendingCount,
+      avg,
+      minC,
+      maxC,
+      rate
+    });
+  }
+  return { summary, details };
+}
+
+function renderCrossPosStats(data) {
+  const summaryBox = document.getElementById('crossPosStatsBox');
+  const summaryBody = document.getElementById('crossPosStatsBody');
+  const detailBox = document.getElementById('crossPosDetailBox');
+  const detailBody = document.getElementById('crossPosDetailBody');
+  if (!summaryBox || !summaryBody || !detailBox || !detailBody) return;
+
+  const ref = currentRef();
+  if (!crossRuleMode) {
+    crossRuleMode = ref.mode;
+  }
+  
+  const ruleSelect = document.getElementById('crossRuleSelect');
+  if (ruleSelect && ruleSelect.value !== crossRuleMode) {
+    ruleSelect.value = crossRuleMode;
+  }
+
+  const startInput = document.getElementById('crossStartIssue');
+  const endInput = document.getElementById('crossEndIssue');
+  if (startInput && endInput && data && data.length > 0) {
+    startInput.placeholder = data[0].issue;
+    endInput.placeholder = data[data.length - 1].issue;
+  }
+
+  let filteredData = data;
+  if (crossRangeStart || crossRangeEnd) {
+    filteredData = getCrossFilteredData(data);
+  }
+
+  if (!filteredData || filteredData.length < 5) {
+    summaryBox.classList.add('hidden');
+    detailBox.classList.add('hidden');
+    return;
+  }
+
+  const { summary, details } = computeCrossPosStats(filteredData, crossRuleMode);
+  
+  const activeSummary = summary.filter(r => r.totalTriggers > 0);
+  if (!activeSummary.length) {
+    summaryBox.classList.add('hidden');
+    detailBox.classList.add('hidden');
+    return;
+  }
+
+  summaryBody.innerHTML = '';
+  activeSummary.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><b>${r.labelK}</b></td>
+      <td>${r.labelNextK}</td>
+      <td>${r.totalTriggers}</td>
+      <td class="hl" style="color:#059669;">${r.hitCount}</td>
+      <td style="color:#dc2626;">${r.missCount}</td>
+      <td style="color:#d97706;">${r.pendingCount}</td>
+      <td>${r.avg !== null ? r.avg.toFixed(2) : '—'}</td>
+      <td>${r.minC !== null ? r.minC + ' 期' : '—'}</td>
+      <td>${r.maxC !== null ? r.maxC + ' 期' : '—'}</td>
+      <td>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-weight:bold;">${(r.rate * 100).toFixed(1)}%</span>
+          <div class="bar" style="margin:0;flex:1;height:6px;min-width:50px;"><i style="width:${(r.rate * 100).toFixed(1)}%;"></i></div>
+        </div>
+      </td>
+    `;
+    summaryBody.appendChild(tr);
+  });
+  summaryBox.classList.remove('hidden');
+
+  details.sort((a, b) => {
+    if (a.triggerIssue.length !== b.triggerIssue.length) return b.triggerIssue.length - a.triggerIssue.length;
+    return a.triggerIssue < b.triggerIssue ? 1 : a.triggerIssue > b.triggerIssue ? -1 : 0;
+  });
+
+  const btn = document.getElementById('toggleCrossDetailBtn');
+  if (btn) {
+    if (details.length <= DEFAULT_CROSS_DETAIL_COUNT) {
+      btn.style.display = 'none';
+    } else {
+      btn.style.display = 'inline-block';
+      btn.textContent = showAllCrossDetails ? '仅显示前20期' : '显示全部';
+    }
+  }
+
+  const displayDetails = showAllCrossDetails ? details : details.slice(0, DEFAULT_CROSS_DETAIL_COUNT);
+
+  detailBody.innerHTML = '';
+  displayDetails.forEach(d => {
+    const tr = document.createElement('tr');
+    if (d.status === 'pending') tr.className = 'row-pending';
+    else if (d.status === 'miss') tr.className = 'row-miss';
+    else if (d.cycle === 1) tr.className = 'row-hit';
+
+    let cycleCell, statusTag;
+    if (d.status === 'hit') {
+      cycleCell = `<span class="hl">${d.cycle} 期</span>`;
+      statusTag = d.cycle === 1 ? '<span class="tag tag-fast">即中</span>' : '<span class="tag tag-hit">命中</span>';
+    } else if (d.status === 'pending') {
+      cycleCell = d.cycle > 0 ? `已投 ${d.cycle} 期` : '—';
+      statusTag = '<span class="tag tag-pending">待定</span>';
+    } else {
+      cycleCell = `已投 ${d.cycle} 期`;
+      statusTag = '<span class="tag tag-miss">未命中</span>';
+    }
+
+    tr.innerHTML = `
+      <td>${d.labelK}</td>
+      <td>${d.triggerIssue}</td>
+      <td>${d.labelNextK}</td>
+      <td>${d.startIssue}</td>
+      <td>${cycleCell}</td>
+      <td class="hl">第${d.finalBetPos}位 ${d.finalBetNums}</td>
+      <td>${statusTag}</td>
+    `;
+    detailBody.appendChild(tr);
+  });
+  detailBox.classList.remove('hidden');
+}
+
 /* ================= 渲染：大小走势 ================= */
 function renderTrend(data) {
   if (trendPosAuto && data && data.length >= 2) {
@@ -1836,7 +2232,8 @@ function renderAll(data, options = {}) {
   updateRefStreaks(data);
   renderTrend(data);
   renderNextPrediction(data, ref);
-  renderPosStats(data);            // 渲染命中周期追踪表
+  renderPosStats(data);            
+  renderCrossPosStats(data);       
   renderHitCycles(data, n, ref);
   if (showBacktest) renderBacktest(data, ref);
   if (rewriteTextarea) rewriteTextareaDesc(data);
@@ -1893,9 +2290,13 @@ function clearAll() {
   document.getElementById('cycleBox').classList.add('hidden');
   document.getElementById('trendBox').classList.add('hidden');
   document.getElementById('posStatsBox').classList.add('hidden');
+  document.getElementById('crossPosStatsBox').classList.add('hidden');
+  document.getElementById('crossPosDetailBox').classList.add('hidden');
   document.getElementById('tbody').innerHTML = '';
   document.getElementById('cycleBody').innerHTML = '';
   document.getElementById('posStatsBody').innerHTML = '';
+  document.getElementById('crossPosStatsBody').innerHTML = '';
+  document.getElementById('crossPosDetailBody').innerHTML = '';
   document.getElementById('trendCols').innerHTML = '';
   updateRefStreaks(null);
   applyBacktestVisibility();
@@ -1932,6 +2333,14 @@ window.addEventListener('DOMContentLoaded', () => {
     if (saved === 'false') showPosStatsTable = false;
   } catch (e) {}
   applyPosStatsVisibility();
+
+  const crossRuleSel = document.getElementById('crossRuleSelect');
+  if (crossRuleSel) {
+    crossRuleSel.addEventListener('change', function() {
+      crossRuleMode = this.value;
+      if (fullData.length >= 2) renderCrossPosStats(fullData);
+    });
+  }
 
   const soundChk = document.getElementById('soundEnabled');
   if (soundChk) {
@@ -2140,6 +2549,7 @@ window.addEventListener('DOMContentLoaded', () => {
       persistRef();
       trendPosAuto = true;
       try { localStorage.setItem(TREND_POS_AUTO_KEY, 'true'); } catch (e) {}
+      crossRuleMode = 'pos';
       if (fullData.length >= 2) run();
     });
   }
@@ -2156,6 +2566,7 @@ window.addEventListener('DOMContentLoaded', () => {
       persistRef();
       trendPosAuto = true;
       try { localStorage.setItem(TREND_POS_AUTO_KEY, 'true'); } catch (e) {}
+      crossRuleMode = 'digit';
       if (fullData.length >= 2) run();
     });
   }
@@ -2172,6 +2583,7 @@ window.addEventListener('DOMContentLoaded', () => {
       persistRef();
       trendPosAuto = true;
       try { localStorage.setItem(TREND_POS_AUTO_KEY, 'true'); } catch (e) {}
+      crossRuleMode = 'combo';
       if (fullData.length >= 2) run();
     });
   }
