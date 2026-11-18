@@ -158,6 +158,7 @@
   button.btn-clear:hover { background: #fecaca; }
   button.btn-toggle { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
   button.btn-toggle:hover { background: #bae6fd; }
+  button.btn-toggle.active { background: #0369a1; color: #fff; border-color: #0369a1; }
   button.btn-backtest { background: #f3e8ff; color: #7c3aed; }
   button.btn-backtest:hover { background: #e9d5ff; }
   button.btn-backtest.active { background: #7c3aed; color: #fff; }
@@ -546,6 +547,9 @@
       <button class="btn-main" onclick="run()">开始分析</button>
       <button class="btn-toggle" id="toggleViewBtn" onclick="toggleShowAll()">显示全部</button>
       <button class="btn-backtest" id="toggleBacktestBtn" onclick="toggleBacktest()">显示回测</button>
+      <button class="btn-toggle" id="toggleCrossStatsBtn" onclick="togglePanel('crossStats')">连错3统计</button>
+      <button class="btn-toggle" id="toggleCrossDetailPanelBtn" onclick="togglePanel('crossDetail')">连错3明细</button>
+      <button class="btn-toggle" id="toggleCycleBtn" onclick="togglePanel('cycle')">命中周期</button>
       <button class="btn-ghost" onclick="fillDemo()">填充示例数据</button>
       <button class="btn-clear" onclick="clearAll()">清空</button>
     </div>
@@ -719,6 +723,7 @@ const TREND_POS_AUTO_KEY = 'pk10_trend_pos_auto_v1';
 const NOTE_KEY = 'pk10_note_v1';
 const FD_SIZE_KEY = 'pk10_fd_size_v1';
 const RULE_VIS_KEY = 'pk10_rule_visibility_v1';
+const PANEL_VIS_KEY = 'pk10_panel_vis_v1';
 const DEFAULT_DISPLAY_COUNT = 10;
 
 let autoFetchTimer = null;
@@ -746,6 +751,9 @@ const DEFAULT_CROSS_DETAIL_COUNT = 20;
 // 规则可见性
 let ruleVisibility = { rule1: true, rule2: true, rule3: true, rule4: true };
 
+// 分析面板可见性（连错3统计 / 连错3明细 / 命中周期）
+let panelVisible = { crossStats: true, crossDetail: true, cycle: true };
+
 /* ================= 规则显示/隐藏 ================= */
 function toggleRuleVisibility(ruleKey) {
   ruleVisibility[ruleKey] = !ruleVisibility[ruleKey];
@@ -759,6 +767,45 @@ function applyRuleVisibilityUI() {
     if (wrapper) {
       wrapper.classList.toggle('collapsed', !ruleVisibility[`rule${i}`]);
     }
+  }
+}
+
+/* ================= 分析面板显示/隐藏 ================= */
+function setPanelShown(el, key) {
+  if (!el) return;
+  el.classList.toggle('hidden', !panelVisible[key]);
+}
+
+function applyPanelVisibilityUI() {
+  const mapping = [
+    ['crossStats', 'toggleCrossStatsBtn'],
+    ['crossDetail', 'toggleCrossDetailPanelBtn'],
+    ['cycle', 'toggleCycleBtn']
+  ];
+  mapping.forEach(([key, id]) => {
+    const btn = document.getElementById(id);
+    if (btn) btn.classList.toggle('active', !!panelVisible[key]);
+  });
+  if (!panelVisible.crossStats) {
+    const el = document.getElementById('crossPosStatsBox');
+    if (el) el.classList.add('hidden');
+  }
+  if (!panelVisible.crossDetail) {
+    const el = document.getElementById('crossPosDetailBox');
+    if (el) el.classList.add('hidden');
+  }
+  if (!panelVisible.cycle) {
+    const el = document.getElementById('cycleBox');
+    if (el) el.classList.add('hidden');
+  }
+}
+
+function togglePanel(key) {
+  panelVisible[key] = !panelVisible[key];
+  try { localStorage.setItem(PANEL_VIS_KEY, JSON.stringify(panelVisible)); } catch (e) {}
+  applyPanelVisibilityUI();
+  if (panelVisible[key] && fullData.length >= 2) {
+    renderAll(fullData);
   }
 }
 
@@ -1853,7 +1900,7 @@ function renderCrossPosStats(data) {
     `;
     summaryBody.appendChild(tr);
   });
-  summaryBox.classList.remove('hidden');
+  setPanelShown(summaryBox, 'crossStats');
 
   details.sort((a, b) => {
     if (a.triggerIssue.length !== b.triggerIssue.length) return b.triggerIssue.length - a.triggerIssue.length;
@@ -1902,7 +1949,7 @@ function renderCrossPosStats(data) {
     `;
     detailBody.appendChild(tr);
   });
-  detailBox.classList.remove('hidden');
+  setPanelShown(detailBox, 'crossDetail');
 }
 
 /* ================= 渲染：大小走势 ================= */
@@ -1980,7 +2027,7 @@ function renderHitCycles(data, n, ref) {
   tbody.innerHTML = ''; statsEl.innerHTML = ''; distRows.innerHTML = '';
 
   if (!rows.length) { box.classList.add('hidden'); return; }
-  box.classList.remove('hidden');
+  setPanelShown(box, 'cycle');
 
   const pendingRows = rows.filter(r => r.pending);
   const hitRows = rows.filter(r => r.hit && !r.pending);
@@ -2593,6 +2640,13 @@ function init() {
     if (v) ruleVisibility = Object.assign({ rule1: true, rule2: true, rule3: true, rule4: true }, JSON.parse(v));
   } catch (e) {}
   applyRuleVisibilityUI();
+
+  // 分析面板可见性
+  try {
+    const pv = localStorage.getItem(PANEL_VIS_KEY);
+    if (pv) panelVisible = Object.assign({ crossStats: true, crossDetail: true, cycle: true }, JSON.parse(pv));
+  } catch (e) {}
+  applyPanelVisibilityUI();
 
   // 备注
   try {
